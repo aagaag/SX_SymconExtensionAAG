@@ -1,10 +1,10 @@
 <?php
+//aagaag
     class Alarmanlage extends IPSModule {
         public function __construct($InstanceID) {
             parent::__construct($InstanceID);
         }
-		
-        public function Create() {
+		public function Create() {
             parent::Create();
 			
 			//Variablenprofile erstellen
