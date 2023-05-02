@@ -1,7 +1,6 @@
 #  Alarmanlage
 ---
-## Dokumentation
-
+## Dokumentation   
 **Inhaltsverzeichnis**
 
 1. [Funktionsumfang](#1-funktionsumfang)
