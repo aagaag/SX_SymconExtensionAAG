@@ -1,192 +1,175 @@
-#  Alarmanlage
----
-## Dokumentation   
-**Inhaltsverzeichnis** 
+# Gruppensteuerung
+Die Gruppensteuerung ermöglicht das gleichzeitige Schalten mehrerer Endgeräte. Der primäre Zweck ist die Steuerung von Beleuchtung oder Rollos. Allerdings kann die Gruppensteuerung auch universell für andere Zwecke eingesetzt werden. z.B. überall dort, wo der Maximalwert mehrerer Geräte benötigt wird.
 
+Die Gruppensteuerung kann für komplexe Aufgaben kaskadiert werden. Das bedeutet dass eine Gruppe aus mehreren Untergruppen bestehen kann.
 
-1. [Funktionsumfang](#1-funktionsumfang)
-2. [Systemanforderungen](#2-systemanforderungen)
-3. [Installation](#3-installation)
-4. [Sensoren](#4-sensoren)
-5. [Melder](#5-melder)
-6. [weitere Optionen](#6-weitere-optionen)
-7. [Betriebsmodus](#7-betriebsmodus)
-8. [Änderungen](#8-änderungen)
----
+## Update-Hinweis
+Falls Sie von einer früheren Version der Gruppensteuerung aktualisiert haben, könne Sie die Kategorien "Geräte", "Helligkeit" und "Bewegung" in der Instanz löschen, sofern Sie darin nur Verknüpfungen abgelegt hatten.
 
+## Änderungen
+04.02.2021
++ Interner Status wird über die Log-Funktion von IP-Symcon protokolliert.
++ Der Gesamtstatus in Prozent hat immer 100% angezeigt wenn Dimmbare als auch nicht Dimmbare Geräte kombiniert wurden. Ab jetzt zeigt der Gesamtwert den eingestellten Dimmwert des höchsten Geräts an, wobei nicht Dimmbare Geräte ignoriert werden.
+o Das aktualisieren von Bewegungsmeldern während der Abwesenheit hatte die Verzögerung vor Abwesenheit neu gestartet.
+o Für die Taster wurde als Verzögerung die Verzögerung + das Bewegungsmelder Timeout verwendet. Dies wurde jetzt so geändert dass nur noch die Verzögerung vor Abwesenheit relevant ist.
+o Bei der Verwendung von Fenster / Türkontakten die Zyklisch den Status aktualisieren wurde bei jeder aktualisierung (ja oder nein) die eingestellte Aktion ausgeführt. Dies wird jetzt nur noch beim Wert "Ja" ausgeführt. (In den Optionen änderbar)
 
-## 1. Funktionsumfang
-Die Alarmanlage wurde einer klassischen Alarmanlage nachempfunden und bietet unter anderem folgende Möglichkeiten.
-- Alarmzonen unterteilt in 24h-Alarm (Rauchmelder / Technik / Sabotage), Technik-Alarm und Einbruch-Alarm.
-- Eingangs- und Ausgangsverzögerung je nach ausgelöstem Sensor.
-- Vorwarnung bei der Eingangs- und Ausgangsverzögerung.
-- Ansteuerung von Sirenen, Warnlichtern und Alarmbeleuchtung mit unterschiedlicher Dauer bis zur automatischen Deaktivierung.
-- Alarm-Sperre bei zu häufiger auslösung bis zum Reset.
-- Betriebsmodus: Deaktiviert, Aktiviert, Intern Aktiviert und Wartung.
-- Statustext zur Nutzung in Text-To-Speech systemen oder Anzeige auf einem Display.
----
+01.02.2021
++ In den Einstellungen kann gewählt werden ob das Anwesenheits- oder Abwesenheitsprofil bei jeder Aktualisierung neu geladen werden soll. Bisher war der fest eingestellte Wert "Ja". Nun ist der veränderbare Standardwert "Nein". Vor allem bei verwendung des "Automatik" Profils für Anwesenheit sollte diese Option auf "Nein" stehen.
 
+06.01.2021
++ Für die Alarmbeleuchtung kann ein extra Profil ausgewählt werden.
++ Den Sensoren können nun direkt Funktionen wie "Alarmbeleuchtung" oder "manuelle anwesenheit" zugeordnet werden.
++ manuelle Anwesenheit, deaktivierte Bewegungsmelder und aktive Alarmbeleuchtung können nun automatisch nach einer eingestellten Zeit wieder auf die Grundwerte zurückgesetzt werden.
++ Bei einem Neustart von IP-Symcon oder Änderungen im Konfigurationsformular werden die Timer neu gestartet, damit die automatikfunktionen durch einen Neustart nicht unterbrochen werden.
 
-## 2. Systemanforderungen
-- IP-Symcon ab Version 5.0
----
-
-
-## 3. Installation
-1. Fügen Sie in der IP-Symcon Managementkonsole im Objektbaum unter "Kern Instanzen" / "Modules" die URL `https://github.com/styletronix/SX_SymconExtension`als neues Modul hinzu.
-2. Fügen Sie an einer beliebigen Stelle im Objektbaum die Instanz  `Alarmanlage` hinzu.
-3. Fügen Sie im Instanzeditor Sensoren und Melder ein.
----
-
-
-## 4. Sensoren
-Sensoren dienen der Überwachung der Umgebung. Dies können z.b. Bewegungsmelder oder Tür- und Fensterkontakte sein.
-Bei jedem Sensor können bestimmte Einstellungen vorgenommen werden. Es sind allerdings nicht alle Kombinationen von Einstellungen möglich.
-
-#### Sensor
-Fügen Sie einen neuen Sensor durch klick auf "Hinzufügen" ein. Wählen Sie eine Variable eines Sensors aus, der sich bei Alarm ändert.
-
-#### Bezeichnung
-Die Bezeichnung wird für das Feld "Auslösender Sensor" und für den "TTS Ausgabetext" verwendet.
-
-#### 24h-Alarm (Sabotage / Technik)
-Wenn diese Option aktiviert ist, wird der Sensor dauerhaft überwacht. Er löst auch bei deaktivierter Alarmanlage einen Alarm aus. Die Überwachung dieses Sensors löst nur dann keinen Alarm aus, wenn sich die Alarmanlage im Status "WARTUNG" befindet.
-Dies ist unter anderem für Sabotage-Kontakte, Wassermelder, Brandmelder usw. gedacht.
-
-#### Technik-Alarm
-Bei aktiver Option ist der Sensor als Technik-Alarm deklariert. Die Alarmauslösung erfolgt wie bei den anderen Sensoren, allerdings kann für einen Technik-Alarm eine andere Signalisierungsart ausgewählt werden. z.B. kann bei Technik-Alarm die Aussensirene deaktiviert bleiben.
-###### Hinweis:
-Ist sowol 24h-Alarm als auch Technik-Alarm für einen Sensor aktiv, wird beim auslösen ein Technik-Alarm und kein 24h-Alarm ausgelöst.
-
-#### Bei jeder Aktualisierung auslösen
-Normalerweise löst die Alarmanlage nur dann aus, wenn der Sensor vom Wert "false" auf den Wert "true" wechselt oder bei einer aktualisierung der variable immer noch auf "true" steht. Ein wechsel von "true" auf "false" oder aktualisieren der Variable auf "false" führt zu keinem Alarm.
-Bei aktiver Option führt jede aktualisierung der Variable, gleichgültig ob sich deren Status geändert hat, zu einem Alarm.
-
-#### Ausgangsverzögerung
-Die Ausgangsverzögerung ist wirksam, nachdem die Alarmanlage aktiviert wurde. Es läuft eine voreinstellbare Zeit ab, bevor der Sensor scharf geschaltet wird.
-Sensoren mit deaktivierter Ausgangsverzögerung können direkt nach dem aktivieren der Alarmanlage einen Alarm auslösen, während Sensoren mit aktivierter Ausgangsverzögerung erst nach dem Ablauf der eingestellten Ausgangsverzögerung einen Alarm melden können.
-
-#### Eingangsverzögerung
-Ein Sensor mit deaktivierter Eingangsverzögerung löst bei aktivierung sofort einen Alarm aus, während ein Sensor mit aktivierter Eingagnsverzögerung zuerst eine Vorwarnung mit einstellbarer Zeit auslöst, bevor der eigentliche Alarm gestartet wird.
-
-#### Intern aktiv
-Die Alarmanlage kann "aktiviert" und "intern aktiviert" werden. Im Zustand "aktiviert" werden alle Sensoren überwacht, während im Zustand "intern aktiviert" nur Sensoren überwacht werden, bei denen die Option "Intern aktiv" aktiviert wurde.
-
-Bei Sensoren welche im Wohnbereich angebracht sind sollte die Option "intern aktiv" deaktiviert und bei Sensoren, welche den aussenbereich überwachen aktiviert sein.
-
----
-
-
-## 5. Melder
-Melder dienen der Signalisierung eines alarmzustandes. Dies sind z.b. Sirene, Warnlicht oder Alarmbeleuchtung.
-
-Für jeden Melder können Optionen eingestellt werden.
-#### 24h-Alarm
-Der Melder wird bei auslösung eines 24h-Alarms aktiviert. Dies kann z.b. durch einen Sabotagekontakt oder Rauchmelder erfolgen.
-
-#### Technik-Alarm
-Der Melder wird bei Technik-Alarm aktiviert. Dies erfolgt durch Sensoren, welche als "Technik-Alarm" definiert wurden.
-
-#### Intern aktiv
-Der Melder wird aktiviert, falls Alarm im Modus "intern aktiv" ausgelöst wurde.
-
-#### Extern aktiv
-Der Melder wird aktiviert, falls der Alarm im Modus "aktiviert" ausgelöst wurde. 
-
-#### Verzögert
-Der Melder wird nach einem Alarm mit einer einstellbaren Verzögerung ausgelöst. Die Verzögerungszeit ist im Instanzeditor einstellbar.
-Hierdurch kann z.b. eine interne Sirene sofrt, und eine externe Sirene nach einer kurzen Verzögerung aktiviert werden.
-
-#### Typ
-- Sirene:
-
-Die gesetzlichen Bestimmungen in Deutschland regeln die maximale Zeit die eine Sirene im aussenbereich aktiv sein darf. Die einschaltdauer der Sirene kann im Instanzeditor eingestellt werden. Empfohlene maximalzeit ist 180 Sekunden.
-
-- Warnlicht:
-
-Das Warnlicht verfügt über eine eigene maximale Einschaltdauer, welche im Instanzeditor eingestellt werden kann. Eine Einstellung von 0 Sekunden deaktiviert die automatische Abschaltung und das Warnlicht bleibt dauerhaft an.
-
-- Alarmbeleuchtung:
-
-Dieser Typ ist für Beleuchtung gedacht, welche während einem Alarm aktiviert werden soll. Auch hierfür kann die maximale Einschaltdauer im Instanzeditor eingestellt werden. Eine Einstellung von 0 Sekunden deaktiviert die automatische abschaltung.
-In Kombination mit dem Modul "Gruppensteuerung" kann eine effektive Steuerung der Beleuchtung bei Alarm realisiert werden. Hierzu kann als Melder direkt die Variable "Alarmbeleuchtung aktiviert" der Gruppensteuerung verknüpft werden.
-
-- Eingangswarnung:
-
-Diese Melder werden nur aktiviert, solange die Einganszeit aktiv ist. Sie sind zur optischen oder akustischen Signalisierung des Systemzustandes gedacht. So kann ein Melder des Typs "Eingangswarnung" als vorwarnung vor dem eigentlichen Alarm genutzt werden.
-
-- Ausgangswarnung:
-
-siehe Eingangswarnung
-
----
-
-
-# 6. weitere Optionen
-- Dauer der Alarmbeleuchtung
-
-Nach der hier eingestellten Zeit werden Melder vom Typ "Alarmbeleuchtung" deaktiviert.
-Der Ablauf der eingestellten Zeit beginnt nach Ablauf der "Alarmverzögerung". Die Tatsächliche Meldedauer ist bei deaktivierung der Option "verzögert" also die hier eingestellte Zeit + "Alarmverzögerung".
-
-- Dauer der Sirene
-
-Nach der hier eingestellten Zeit werden Melder vom Typ "Sirene" deaktiviert.
-Der Ablauf der eingestellten Zeit beginnt nach Ablauf der "Alarmverzögerung". Die Tatsächliche Meldedauer ist bei deaktivierung der Option "verzögert" also die hier eingestellte Zeit + "Alarmverzögerung".
-
-- Dauer des Warnlichts
-
-Nach der hier eingestellten Zeit werden Melder vom Typ "Warnlicht" deaktiviert.
-Der Ablauf der eingestellten Zeit beginnt nach Ablauf der "Alarmverzögerung". Die Tatsächliche Meldedauer ist bei deaktivierung der Option "verzögert" also die hier eingestellte Zeit + "Alarmverzögerung".
-
-4. Maximale erneute Auslösungen
-
-Die Alarmanlage kann nach Ablauf der "Dauer der Sirene" erneut aktiviert werden und dadurch erneut einen Alarm mit Sirene auslösen. Um zu häufiges aktivieren, z.b. durch einen defekten Sensor, zu unterbinden, kann hier eine Anzahl angegeben werden, wie oft eine erneute aktivierung möglich ist, bevor die Alarmanlage über einen Reset zurückgesetzt werden muss. Ein Reset kann dabei durch den Befehl `SXALERT_Reset(int $InstanceID);` oder durch "deaktivieren" der Anlage erfolgen.
-
-- Eingangsverzögerung
-
-Hier wird die Verzögerung angegeben, mit welcher ein Sensor mit aktiver "Eingangsverzögerung" einen Alarm auslöst.
-
-- Ausgangsverzögerung
-
-Hier wird die Verzögerung angegeben, mit welcher ein Sensor mit aktiver "Ausgangsverzögerung" wartet, bevor er nach aktivieren der Alarmanlage scharf geschaltet wird.
-
-- Alarmverzögerung
-
-Bei einem Alarm werden Melder mit aktiver Option "Verzögert" nach dieser Zeitspanne aktiviert.
-
----
-
-## 7. Betriebsmodus
-Der Betriebsmodus wird über die Variable `Status` im WebFront oder den Befehl `SXALERT_SetMode(int $InstanceID, int $Modus);` geändert.
-
-Es stehen folgende Betriebsarten zur Verfügung:
-- Deaktiviert
-Die Alarmanlage löst nur Alarm aus, wenn ein Sensor mit aktiver Option "24h-Alarm" aktiv wird.
-
-- Aktiviert
-Die Alarmierung erfolgt durch alle Sensoren.
-
-- Intern aktiviert
-Die Alarmierung erfolgt nur durch Sensoren mit aktiver Option "24h-Alarm" und "intern aktiv".
-
-- WARTUNG
-Die Alarmanlage ist vollständig deaktiviert und löst auch bei 24h-Alarm keinen Alarm aus.
-
----
-
-## 8. Änderungen
+18.08.2019
+o Wenn keine Bewegungsmelder eingerichtet wurden, hat die manuelle Anwesenheit nicht mehr auf "Abwesend" zurück geschaltet.
+o Wenn für "Abwesenheit" ein Profil ausgewählt wurde, wurde dies bei Abwesenheit nicht verwendet.
 
 07.10.2018
-+ Push-Nachrichten können konfiguriert werden. 
++ Werte werden vor der Zuweisung gerundet um korrekt prüfen zu können ob eine Variable aktualisiert werden muss oder nicht.
 
 05.10.2018
-o Fehler im Konfigurationsformular behoben, welches in manchen Versionen von IP-Symcon zu Fehlermeldungen geführt hat.
+o Variablen mit benutzerdefiniertem ActionScript wurden beim laden von Profilen nicht korrekt gesetzt.
+o Beim laden von Profilen kam es bei nicht existierenden Geräten zu Fehlermeldung.
++ Bei Variablen werden nun die Min/Max-Werte der Profile berücksichtigt und in Prozentwerte von 0 - 100% umgerechnet.
++ Werte, welche mit SXGRP_SetState... gesetzt werden, sind nun als Prozentwerte zu verstehen, welche auf die einzelnen Variablen anhand der eingestellten Min-/Max-Werte der jeweiligen Profile umgerechnet werden.
 
 23.09.2018
-+ Variablen mit benutzerdefiniertem ActionScript werden unterstützt.
+- Variablen mit benutzerdefiniertem ActionScript werden unterstützt.
 
-31.08.2018
-+ Erstes öffentliches Release
+02.09.2018
+- Anpassung von diversen Timern an die neuen Möglichkeiten in IP-Symcon 5.0
+- Entfernung nicht mehr benötigter Skripts und externer Timer.
 
-28.08.2018
-- Erste Beta-Version
+30.08.2018  
+- Umstellung zur Nutzung von Listen im Instanzeditor die seit IP-Symcon 5.0 verfügbar sind.
+- Entfernung nicht mehr benötigter Funktionen und Kategorien.
+
+
+## Installation
+1.  Fügen Sie SX_SymconExtension zu den Modulen von IP-Symcon hinzu.
+2.  Fügen Sie schaltbare Variablen zur Liste der Aktoren hinzu, die als Gruppe gesteuert werden sollen.
+3. Speichern Sie die Änderungen und prüfen Sie die Funktion durch betätigen der Taset "An" und "Aus" im Instanzeditor.
+4. Fügen Sie gegebenenfalls Bewegungsmelder, Taster und Helligkeitssensoren in der entsprechenden Liste hinzu.
+
+## Unterstützte Variablen und Geräte
+Es werden alle Geräte bzw. Variablen unterstützt, welche auch per WebFront geschaltet werden können.
+Seit Update vom 05.10.2018 werden alle Variablen mit korrektem Profil und Min/Max-Werten unterstützt.
+
+## Profile
+Der Status der Geräte kann in Profilen gespeichert werden. Wobei für jedes Profil der einzelstatus der Geräte gespeichert wird. Wird z.b. in einem Profil die Lampe1 auf 50% und die Lampe2 auf 100% gesetzt, wird genau dieser Zustand wiederhergestellt, sobald das Profil wieder aufgerufen wird.
+
+Profile können per Event ausgewählt werden. z.B. ist es möglich für Tags und für Nachts getrennte Profile zu speichern und diese nach Zeit oder einen externen Helligkeitssensor umzuschalten. So geht im Wohnzimmer Tags das Licht mit voller Helligkeit an. Und abends z.b. nur die Stehlampe und das Hauptlicht auf 10% gedimmt.
+Ist das Licht bereits durch Bewegungsmelder aktiviert worden, führt ein Wechsel des Profils per Event auch zum sofortigen Umschalten der aktuellen Beleuchtung. Ist das Licht ausgeschaltet führt ein Profilwechsel per Event zu keiner Änderung, bis Bewegung im Raum erkannt wurde.
+
+Profile können über das WebFront oder Befehle (siehe Befehlsreferenz) gespeichert und geladen werden.
+
+### Bewegungsmelder
+Es werden Bewegungsmelder unterstützt. Sobald Bewegung erkannt wird kann die Gruppe entweder ein-, ausgeschaltet, auf ein bestimmtes Profil gesetzt werden oder den Zustand annehmen in dem sich Geräte zuletzt befanden, als die Bewegung erkannt wurde. Als Bewegungsmelder kann nahezu jedes Gerät verwendet werden, das entweder Abwesend / Anwesend meldet oder nur den Status aktualisiert. So können auch Taster verwendet werden um die Gruppe für eine voreingestellte Zeit einzuschalten. Zusätzlich überwacht die Gruppensteuerung, ob ein Bewegungsmelder auf grund von Störung nicht mehr von Anwesend auf Abwesend meldet. Verbleibt ein Bewegungsmelder also ohne erneute Aktualisierung der Variable auf "Anwesend" wird die Gruppe nach einer einstellbaren Zeit auf "Abwesend" gesetzt.
+
+Vor der Abschaltung der Gruppe kann eine Zeitspanne und ein Level angegeben werden auf das vor der Abschaltung gedimmt werden soll. Wird keine Bewegung mehr erkannt, kann die Gruppe z.b. 20 Sekunden warten, dann die Helligkeit auf 10% stellen, dort nochmals 30 Sekunden warten und dann das Licht ausschalten. So vermeidet man es unerwartet im dunkeln zu stehen.
+
+Bewegungsmelder können über die GUI aktiviert und deaktiviert werden. 
+
+Beispiel:
+Ist das Profil für Anwesend "Automatik" und für Abwesend auf "Aus" gestellt, verhält sich die Steuerung wie folgt: Wenn Bewegung erkannt wird (z.B. durch betreten eines Raumes), geschieht erst ein mal nichts. Schaltet man nun das Licht manuell ein, wird dieser Zustand gespeichert. Meldet der Bewegungsmelder nun "Abwesend", wird das Licht im Raum ausgeschaltet. Beim nächsten betreten des Raumes wird das Licht nun in den Zustand gesetzt, wie er zuletzt vor verlassen des Raumes war. Das Licht wird wieder eingeschaltet. Der Status wird dabei für jedes Gerät, welcher der Gruppe zugeordnet ist einzeln gespeichert. Jedes Licht in der Gruppe kann also einen anderen Zustand haben. Dies ist z.b. für Schlafzimmer interessant wo man nachts bei Bewegung nicht unbedingt licht möchte aber dennoch sichergehen will, dass niemand vergisst das licht auszuschalten wenn niemand mehr im Raum ist.
+
+## Beispiele
+
+### Steuerung nach Helligkeit
+Bewegungsmelder können mit einem Helligkeitssensor kombiniert werden, damit das Licht nur aktiviert wird, wenn dies erforderlich ist. Als Helligkeitssensor kann entweder ein eigener Sensor verwendet werden, oder einen im Bewegungsmelder integrierte Sensor. Wenn der Sensor integriert ist und man für einen Raum (z.b. Treppenhaus) mehrere Bewegungsmelder für eine Gruppe verwendet, kann die Gruppensteuerung so eingestellt werden, dass die Beleuchtung nur aktiviert wird, wenn an dem Bewegungsmelder, welcher die Bewegung erkannt hat, auch die Helligkeit zum einschalten unterschritten wurde. Eine Bewegung im Obergeschoss führt so Tagsüber nicht zu einem einschalten der Gruppe, im dunkeln Keller wird eine Bewegung aber dennoch das Treppenhauslicht aktivieren.
+
+### Alarmbeleuchtung
+Die Gruppen verfügen über eine "Alarmbeleuchtung". Wird diese Funktion aktiviert, werden alle Geräte eingeschaltet und können über die Gruppenfunktion nicht mehr abgeschaltet werden. Nach deaktivierung der alarmbeleuchtung kehren alle Geräte in den Zustand vor der aktivierung der Alarmfunktion zurück.
+
+Die Alarmbeleuchtung kann über das WebFront oder den Befehl `SXGRP_SetAlertState(int $InstanceID, bool $Value);` geschaltet werden.
+
+### Manuelle Steuerung
+Zur manuellen Steuerung gibt es sowohl einen Schieberegler für Dimmbare Geräte, als auch einen Ein/Aus Schalter für nicht dimmbare Geräte im WebFront. Werden mehrere Gerätearten in einer Gruppe kombiniert, wird ein dimmen >= 1% automatisch alle nicht dimmbaren Geräte einschalten.
+
+Dies entspricht den Befehlen `SXGRP_SetState(int $InstanceID, bool $Value);` , `SXGRP_SetStateFloat(int InstanceID, float $Value);` und `SXGRP_SetStateInteger(int $InstanceID, int $Value); `
+
+Werden einzelne Geräte nicht über die Gruppe gesteuert, so zeigt die Gruppensteuerung als Status den höchsten Dimm-Wert der Geräte an.
+
+### Automatiklicht
+Funktion: Das Licht wird automatisch ausgeschaltet wenn man den Raum verläßt bzw. keine Bewegung erkannt wird. Beim betreten des Raums wird auf die zuletzt verwendete Einstellung gewechselt. Also z.b. Aus, An oder einen bestimmten Dimm-Wert.
+
+Dies ist Optimal wenn man verhindern möchte das man das Licht vergisst auszuschalten.
+ 
+Verbundene Geräte: Bewegungsmelder, Beleuchtung.
+
+Einstellung: Profil Anwesend: "Automatik", Profil Abwesend: "Aus", Bewegungsmelder aktiv
+
+### Treppenhauslicht
+Funktion: Über Bewegungsmelder oder Taster wir das Licht für eine voreingestellte Zeit eingeschaltet.
+
+Verbundene Geräte: Bewegungsmelder und/oder Taster, Beleuchtung.
+
+Einstellung: Profil Anwesend: "Ein", Profil Abwesend: "Aus", Bewegungsmelder aktiv, Verzögerung für Abwesenheit: 120 Sekunden
+
+
+## PHP-Befehlsreferenz
+
+`float $minLevel = SXGRP_GetIlluminationLevelMin(int $InstanceID);`
+Liefert den niedrigsten Helligkeitswert aller Helligkeitssensoren.
+
+`SXGRP_SetState(int $InstanceID, bool $Value);`
+Wichtig: Seit Update vom 05.10.2018 werden alle Werte als % interpretiert und intern umgerechnet.
+Setzt den Status aller Geräte auf Ein, oder Aus. Bzw. 0% oder 100%
+
+`SXGRP_SetStateFloat(int InstanceID, float $Value);`
+Wichtig: Seit Update vom 05.10.2018 werden alle Werte als % interpretiert und intern umgerechnet.
+Setzt den Status aller Geräte auf den Wert `$Value` 
+Gültige Werte für $Value sind 0.0 bis 1.0. (Entspricht 0% bis 100%)
+
+`SXGRP_SetStateInteger(int $InstanceID, int $Value);`
+Wichtig: Seit Update vom 05.10.2018 werden alle Werte als % interpretiert und intern umgerechnet.
+Setzt den Status aller Geräte auf den Wert `$Value`
+Gültige Werte für $Value sind 0 bis 100. (Entspricht 0% bis 100%)
+
+`SXGRP_SetAlertState(int $InstanceID, bool $Value);`
+Aktiviert oder deaktiviert die Alarmbeleuchtung.
+
+`SXGRP_SetManualPresence(int $InstanceID, bool $Value);`
+Setzt die Anwesenheit für eine Gruppe manuell auf "Anwesend" oder "Abwesend". Der  Zustand "Anwesend" hat Vorrang, wenn vorhandene Bewegungsmelder einen anderen Status als die manuelle Einstellung melden.
+
+`SXGRP_SetPresenceState(int $InstanceID, bool $Value);`
+Nur zur internen Verwendung. Wird in künftigen Versionen entfernt.
+
+`SXGRP_PresenceTimeoutOff(int $InstanceID);`
+Nur zur internen Verwendung. Wird in künftigen Versionen entfernt.
+
+`SXGRP_ResetPresenceStateToTemplate(int $InstanceID);`
+
+`SXGRP_StoreCurrentAsPresenceStateTemplate(int $InstanceID);`
+
+`SXGRP_GetCurrentStateString(int $InstanceID);`
+
+`SXGRP_SetCurrentStateString(int $InstanceID);`
+
+`SXGRP_CallProfile(int $InstanceID, int $ProfileID);`
+
+`SXGRP_UseProfileIDAsPresenceStateTeplate(int $InstanceID, int $ProfileID);`
+
+`SXGRP_UseProfileIDAsPresenceStateTeplateAndApplyToCurrentStateIfPresent(int $InstanceID, int $ProfileID);`
+
+`SXGRP_StoreProfile(int $InstanceID, int $ProfileID);`
+
+`SXGRP_StoreCurrentProfile(int $InstanceID);`
+
+`SXGRP_EnablePresenceDetection(int $InstanceID);`
+
+`SXGRP_DisablePresenceDetection(int $InstanceID);`
+
+`SXGRP_SetProfile(int $InstanceID, int $ProfileID);`
+
+`SXGRP_SetProfilePresent(int $InstanceID, int $ProfileID);`
+
+`SXGRP_SetProfileAbsent(int $InstanceID, int $ProfileID);`
+
+`SXGRP_SetIlluminationLevelMotion(int $InstanceID, int $ProfileID);`
+
+`SXGRP_SetIlluminationLevelMotion(int $InstanceID, int $ProfileID);`
+
